@@ -6,6 +6,7 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.SingleFileStoreConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
+import org.infinispan.configuration.global.GlobalStateConfigurationBuilder;
 import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.eviction.EvictionType;
 import org.infinispan.manager.DefaultCacheManager;
@@ -80,20 +81,30 @@ public class TestIsb {
     }
 
     private DefaultCacheManager clusteredCacheManager(CacheMode mode, int owners, String nodeName) {
-        GlobalConfiguration glob = new GlobalConfigurationBuilder().clusteredDefault()
+        GlobalStateConfigurationBuilder gscb = new GlobalConfigurationBuilder().clusteredDefault()
                 .transport().addProperty("configurationFile", System.getProperty("jgroups.configuration", "jgroups-test-tcp.xml"))
                 .clusterName("HACEP")
                 .nodeName(nodeName)
-                .globalJmxStatistics()
-                .allowDuplicateDomains(true).enable()
-                .build();
+                .globalJmxStatistics().allowDuplicateDomains(true).enable()
+                .globalState().enable();
+
+
+        if( nodeSelector == 1 ){
+            gscb.persistentLocation(persistenceLocation);
+        } else if( nodeSelector == 2) {
+            gscb.persistentLocation(persistenceLocation2);
+        } else if( nodeSelector == 3) {
+            gscb.persistentLocation(persistenceLocation3);
+        } else {
+            throw new UnsupportedOperationException("Node id unknown");
+        }
 
         ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
         configurationBuilder.invocationBatching().enable();
         configurationBuilder.clustering().cacheMode(mode).hash().numOwners(owners).groups().enabled();
 
         org.infinispan.configuration.cache.Configuration loc = extendDefaultConfiguration(configurationBuilder).build();
-        return new DefaultCacheManager(glob, loc, true);
+        return new DefaultCacheManager(gscb.build(), loc, true);
     }
 
     private ConfigurationBuilder extendDefaultConfiguration(ConfigurationBuilder builder) {
