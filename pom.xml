@@ -10,7 +10,7 @@
 
     <properties>
         <!--<version.org.infinispan>8.4.0.Final-redhat-2</version.org.infinispan>-->
-        <version.org.infinispan>9.0.0.Final</version.org.infinispan>
+        <version.org.infinispan>9.2.2.Final</version.org.infinispan>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
